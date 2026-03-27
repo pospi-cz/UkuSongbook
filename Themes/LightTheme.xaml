@@ -85,6 +85,14 @@
     <SolidColorBrush x:Key="InputBorderFocusBrush"     Color="#0067C0"/>
     <SolidColorBrush x:Key="InputBgBrush"              Color="#FFFFFF"/>
 
+    <!-- ── Vyhledávací pole (sidebar) ───────────────────────── -->
+    <SolidColorBrush x:Key="SearchBoxBackgroundBrush"   Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SearchBoxBorderBrush"       Color="#00000029"/>
+    <SolidColorBrush x:Key="SearchBoxForegroundBrush"   Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="SearchBoxPlaceholderBrush" Color="#9D9D9D"/>
+    <SolidColorBrush x:Key="SearchBoxFocusBrush"      Color="#0067C0"/>
+    <SolidColorBrush x:Key="SearchBoxSelectionBrush"   Color="#CCE8FF"/>
+
     <!-- ── Editor (vždy tmavý) ──────────────────────────────── -->
     <SolidColorBrush x:Key="EditorBgBrush"             Color="#1E1E1E"/>
     <SolidColorBrush x:Key="EditorFgBrush"             Color="#D4D4D4"/>

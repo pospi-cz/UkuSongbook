@@ -15,16 +15,20 @@ public static class ThemeService
 
         var appDicts = Application.Current.Resources.MergedDictionaries;
 
-        // Odstraň přesně LightTheme nebo DarkTheme — ne MainTheme!
-        var existing = appDicts.FirstOrDefault(d =>
-            d.Source?.OriginalString is string s &&
-            (s.EndsWith("LightTheme.xaml") || s.EndsWith("DarkTheme.xaml")));
-
-        if (existing is not null) appDicts.Remove(existing);
-
-        // Vložit na index 0 — musí být PŘED MainTheme.xaml,
-        // jinak MainTheme přebije brushe dříve než je DynamicResource načte
+        // Nejdřív přidat nové téma. Dříve se nejdřív mazalo staré a pak vkládalo nové —
+        // krátce zůstával jen MainTheme.xaml bez barevných brushů a DynamicResource
+        // hlásil „Resource not found“ pro všechny klíče z Light/DarkTheme.
         appDicts.Insert(0, dict);
+
+        for (var i = appDicts.Count - 1; i >= 0; i--)
+        {
+            var d = appDicts[i];
+            if (ReferenceEquals(d, dict)) continue;
+            if (d.Source?.OriginalString is string s &&
+                (s.EndsWith("LightTheme.xaml", StringComparison.OrdinalIgnoreCase) ||
+                 s.EndsWith("DarkTheme.xaml", StringComparison.OrdinalIgnoreCase)))
+                appDicts.RemoveAt(i);
+        }
     }
 
     public static void Toggle() => Apply(!IsDark);

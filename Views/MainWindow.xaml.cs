@@ -1,3 +1,6 @@
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Ukebook.Models;
 using Ukebook.Services;
@@ -10,6 +13,27 @@ public partial class MainWindow : Window
     private MainViewModel VM => (MainViewModel)DataContext;
     private readonly ChordProParser _parser = new();
 
+    /// <summary>
+    /// Sdílené prostředí WebView2 s uživatelskou složkou v LocalApplicationData.
+    /// Výchozí umístění profilu může na některých systémech skončit chybou „Access is denied“.
+    /// </summary>
+    private static Task<CoreWebView2Environment>? _webViewEnvironmentTask;
+
+    private static Task<CoreWebView2Environment> GetWebViewEnvironmentAsync()
+    {
+        return _webViewEnvironmentTask ??= CreateWebViewEnvironmentAsync();
+    }
+
+    private static async Task<CoreWebView2Environment> CreateWebViewEnvironmentAsync()
+    {
+        var userDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Ukebook",
+            "WebView2");
+        Directory.CreateDirectory(userDataFolder);
+        return await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+    }
+
     private bool _mainWebReady    = false;
     private bool _previewWebReady = false;
 
@@ -21,6 +45,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        SourceInitialized += (_, _) => RemoveTitleBarIcon();
         _ = InitWebViewsAsync();
         SetupKeyBindings();
         _previewTimer.Tick += (_, _) => { _previewTimer.Stop(); UpdatePreview(); };
@@ -28,6 +53,21 @@ public partial class MainWindow : Window
         // Napojit ToggleThemeCommand přímo zde — máme jistotu že DataContext existuje
         VM.ThemeToggleRequested += OnThemeToggleRequested;
     }
+
+    /// <summary>
+    /// Smaže ikonu v záhlaví okna (ikona z exe se jinak může zobrazit i při Icon=null).
+    /// </summary>
+    private void RemoveTitleBarIcon()
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero) return;
+        const uint WM_SETICON = 0x0080;
+        SendMessage(hwnd, WM_SETICON, (IntPtr)0, IntPtr.Zero);
+        SendMessage(hwnd, WM_SETICON, (IntPtr)1, IntPtr.Zero);
+    }
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
     private void OnThemeToggleRequested()
     {
@@ -40,10 +80,11 @@ public partial class MainWindow : Window
     {
         try
         {
-            await SongWebView.EnsureCoreWebView2Async();
+            var env = await GetWebViewEnvironmentAsync();
+            await SongWebView.EnsureCoreWebView2Async(env);
             _mainWebReady = true;
 
-            await PreviewWebView.EnsureCoreWebView2Async();
+            await PreviewWebView.EnsureCoreWebView2Async(env);
             _previewWebReady = true;
 
             VM.PropertyChanged += (_, e) =>
@@ -176,7 +217,22 @@ public partial class MainWindow : Window
         var wv = new WebView2();
         win.Content = wv;
         win.Show();
-        wv.EnsureCoreWebView2Async()
-          .ContinueWith(_ => Dispatcher.Invoke(() => wv.NavigateToString(helpHtml)));
+        _ = LoadChordProHelpAsync(wv, helpHtml);
+    }
+
+    private async Task LoadChordProHelpAsync(WebView2 wv, string helpHtml)
+    {
+        try
+        {
+            var env = await GetWebViewEnvironmentAsync();
+            await wv.EnsureCoreWebView2Async(env);
+            wv.NavigateToString(helpHtml);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Nepodařilo se zobrazit nápovědu (WebView2).\n\n{ex.Message}",
+                "Chyba", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 }

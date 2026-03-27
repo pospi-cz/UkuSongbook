@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:vm="clr-namespace:Ukebook.ViewModels"
-        Title="Ukulele Zpěvník"
+        Title="🎸 Ukebook"
+        Icon="{x:Null}"
         Width="1280" Height="780"
         MinWidth="860" MinHeight="520"
         WindowStartupLocation="CenterScreen"
@@ -125,7 +126,7 @@
                                     VerticalAlignment="Center" Margin="0,0,4,0">
                             <TextBlock Text="🎸" FontSize="16"
                                        VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="Zpěvník"
+                            <TextBlock Text="Seznam písní"
                                        Foreground="{DynamicResource SidebarTextBrush}"
                                        FontSize="14" FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
@@ -167,7 +168,7 @@
                                     Margin="12,0,0,0" VerticalAlignment="Center"
                                     IsHitTestVisible="False">
                             <TextBlock Text="🔍" FontSize="11"
-                                       Foreground="{DynamicResource SidebarMutedBrush}"
+                                       Foreground="{DynamicResource SearchBoxPlaceholderBrush}"
                                        Margin="0,0,5,0">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
@@ -181,7 +182,7 @@
                                 </TextBlock.Style>
                             </TextBlock>
                             <TextBlock Text="Hledat..." FontSize="12"
-                                       Foreground="{DynamicResource SidebarMutedBrush}">
+                                       Foreground="{DynamicResource SearchBoxPlaceholderBrush}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -227,23 +228,7 @@
                                                FontSize="11"
                                                Foreground="{DynamicResource SidebarSubtextBrush}"
                                                TextTrimming="CharacterEllipsis"
-                                               MaxWidth="130"/>
-                                    <TextBlock Text=" · " FontSize="11"
-                                               Foreground="{DynamicResource SidebarMutedBrush}">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Key}" Value="">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    <TextBlock Text="{Binding Key}"
-                                               FontSize="11"
-                                               Foreground="{DynamicResource SidebarMutedBrush}"/>
+                                               MaxWidth="130"/>                                    
                                 </StackPanel>
                             </StackPanel>
                         </DataTemplate>
@@ -382,27 +367,6 @@
                                        FontSize="12" VerticalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Song info (vpravo) -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal"
-                                    VerticalAlignment="Center"
-                                    Visibility="{Binding HasSelectedSong,
-                                                 Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="{Binding SelectedSong.Title}"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                       FontSize="13" FontWeight="SemiBold"
-                                       VerticalAlignment="Center"
-                                       MaxWidth="220" Margin="0,0,6,0"
-                                       TextTrimming="CharacterEllipsis"
-                                       Visibility="{Binding IsViewing,
-                                                    Converter={StaticResource BoolToVis}}"/>
-                            <TextBlock Text="{Binding SelectedSong.Artist}"
-                                       Foreground="{DynamicResource ToolbarTextBrush}"
-                                       FontSize="12" VerticalAlignment="Center"
-                                       MaxWidth="160" Margin="0,0,14,0"
-                                       TextTrimming="CharacterEllipsis"
-                                       Visibility="{Binding IsViewing,
-                                                    Converter={StaticResource BoolToVis}}"/>
-                        </StackPanel>
                     </Grid>
                 </Border>
 

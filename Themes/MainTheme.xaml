@@ -187,17 +187,19 @@
         </Setter>
     </Style>
 
-    <!-- ── Search TextBox ───────────────────────────────────── -->
+    <!-- ── Search TextBox (barvy z LightTheme / DarkTheme: SearchBox*Brush) ── -->
     <Style x:Key="SearchBoxStyle" TargetType="TextBox">
-        <Setter Property="Background"      Value="{DynamicResource InputBgBrush}"/>
-        <Setter Property="Foreground"      Value="{DynamicResource SidebarTextBrush}"/>
-        <Setter Property="BorderBrush"     Value="{DynamicResource InputBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding"         Value="10,7"/>
-        <Setter Property="FontSize"        Value="13"/>
-        <Setter Property="FontFamily"      Value="{StaticResource Win11Font}"/>
-        <Setter Property="CaretBrush"      Value="{DynamicResource SidebarTextBrush}"/>
-        <Setter Property="MinHeight"       Value="32"/>
+        <Setter Property="Background"        Value="{DynamicResource SearchBoxBackgroundBrush}"/>
+        <Setter Property="Foreground"        Value="{DynamicResource SearchBoxForegroundBrush}"/>
+        <Setter Property="BorderBrush"       Value="{DynamicResource SearchBoxBorderBrush}"/>
+        <Setter Property="BorderThickness"   Value="1"/>
+        <Setter Property="Padding"           Value="10,7"/>
+        <Setter Property="FontSize"          Value="13"/>
+        <Setter Property="FontFamily"        Value="{StaticResource Win11Font}"/>
+        <Setter Property="CaretBrush"        Value="{DynamicResource SearchBoxForegroundBrush}"/>
+        <Setter Property="SelectionBrush"    Value="{DynamicResource SearchBoxSelectionBrush}"/>
+        <Setter Property="SelectionOpacity"  Value="1"/>
+        <Setter Property="MinHeight"         Value="32"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -211,7 +213,7 @@
                         <Border x:Name="focusLine"
                                 Height="2" VerticalAlignment="Bottom"
                                 HorizontalAlignment="Stretch"
-                                Background="{DynamicResource InputBorderFocusBrush}"
+                                Background="{DynamicResource SearchBoxFocusBrush}"
                                 CornerRadius="0,0,4,4"
                                 Opacity="0"/>
                         <Border Padding="{TemplateBinding Padding}">
@@ -223,7 +225,7 @@
                         <Trigger Property="IsFocused" Value="True">
                             <Setter TargetName="focusLine" Property="Opacity" Value="1"/>
                             <Setter TargetName="outerBorder" Property="BorderBrush"
-                                    Value="{DynamicResource InputBorderBrush}"/>
+                                    Value="{DynamicResource SearchBoxBorderBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -231,16 +233,154 @@
         </Setter>
     </Style>
 
-    <!-- ── Sidebar ComboBox ─────────────────────────────────── -->
+    <!-- ── Sidebar ComboBox — položky rozbalovacího seznamu (stejné barvy jako SearchBox) ── -->
+    <Style x:Key="SidebarComboBoxItemStyle" TargetType="ComboBoxItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource SearchBoxForegroundBrush}"/>
+        <Setter Property="Padding"    Value="10,6"/>
+        <Setter Property="FontFamily" Value="{StaticResource Win11Font}"/>
+        <Setter Property="FontSize"   Value="13"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Bd" Property="Background"
+                                    Value="{DynamicResource SidebarHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background"
+                                    Value="{DynamicResource SidebarSelectedBrush}"/>
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource SidebarSelectedTextBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ── Sidebar ComboBox — vzhled jako SearchBoxStyle (rámeček, spodní linka focus/otevření) ── -->
     <Style x:Key="SidebarComboStyle" TargetType="ComboBox">
-        <Setter Property="Background"      Value="{DynamicResource InputBgBrush}"/>
-        <Setter Property="Foreground"      Value="{DynamicResource SidebarTextBrush}"/>
-        <Setter Property="BorderBrush"     Value="{DynamicResource InputBorderBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding"         Value="10,5"/>
-        <Setter Property="FontSize"        Value="12"/>
-        <Setter Property="FontFamily"      Value="{StaticResource Win11Font}"/>
-        <Setter Property="MinHeight"       Value="32"/>
+        <Setter Property="Background"                  Value="Transparent"/>
+        <Setter Property="Foreground"                  Value="{DynamicResource SearchBoxForegroundBrush}"/>
+        <Setter Property="BorderThickness"             Value="0"/>
+        <Setter Property="Padding"                     Value="10,7"/>
+        <Setter Property="FontSize"                     Value="13"/>
+        <Setter Property="FontFamily"                  Value="{StaticResource Win11Font}"/>
+        <Setter Property="MinHeight"                   Value="32"/>
+        <Setter Property="FocusVisualStyle"            Value="{x:Null}"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility"   Value="Auto"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment"     Value="Center"/>
+        <Setter Property="ItemContainerStyle"         Value="{StaticResource SidebarComboBoxItemStyle}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto" MinWidth="28"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Popup x:Name="PART_Popup"
+                               Grid.ColumnSpan="2"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               Placement="Bottom"
+                               PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                               PopupAnimation="Slide">
+                            <Border x:Name="DropDownBorder"
+                                    Background="{DynamicResource SearchBoxBackgroundBrush}"
+                                    BorderBrush="{DynamicResource SearchBoxBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Margin="0,2,0,0"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    MinWidth="{Binding ActualWidth, ElementName=MainGrid}"
+                                    SnapsToDevicePixels="True">
+                                <ScrollViewer Margin="0,4"
+                                              Padding="0,0,4,0"
+                                              SnapsToDevicePixels="True"
+                                              HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                              VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+
+                        <Border x:Name="OuterBorder"
+                                Grid.ColumnSpan="2"
+                                Background="{DynamicResource SearchBoxBackgroundBrush}"
+                                BorderBrush="{DynamicResource SearchBoxBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                MinHeight="{TemplateBinding MinHeight}"/>
+                        <Border x:Name="FocusLine"
+                                Grid.ColumnSpan="2"
+                                Height="2"
+                                VerticalAlignment="Bottom"
+                                Background="{DynamicResource SearchBoxFocusBrush}"
+                                CornerRadius="0,0,4,4"
+                                Opacity="0"/>
+                        <ToggleButton x:Name="DropDownToggle"
+                                      Grid.ColumnSpan="2"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      ClickMode="Press"
+                                      Focusable="False"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border Background="Transparent"/>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <ContentPresenter Grid.Column="0"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          IsHitTestVisible="False"
+                                          SnapsToDevicePixels="True"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                          TextElement.Foreground="{DynamicResource SearchBoxForegroundBrush}"/>
+                        <Path Grid.Column="1"
+                              Margin="0,0,10,0"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              Data="M 0 0 L 4 4 L 8 0 Z"
+                              Fill="{DynamicResource SearchBoxForegroundBrush}"
+                              IsHitTestVisible="False"
+                              Stretch="Uniform"
+                              Width="6"
+                              Height="4"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="FocusLine" Property="Opacity" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="FocusLine" Property="Opacity" Value="1"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.38"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- ── Editor (VS Code / tmavý) ────────────────────────── -->
