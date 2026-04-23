@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(grep -E \"^\\(C|G|Am|F|Em|Dm|A|E|D|Bm|G7|C7|D7|F#m|Bb\\)\\\\.png$\")"
+    ]
+  }
+}

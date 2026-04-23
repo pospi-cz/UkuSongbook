@@ -8,7 +8,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         SongService.EnsureDataDirectory();
-        // Aplikuj výchozí světlé téma hned při startu
-        ThemeService.Apply(dark: false);
+        // Motiv načteme z settings.json v %APPDATA%\Ukebook; výchozí = světlý
+        ThemeService.Apply(SettingsService.Current.IsDarkTheme);
     }
 }

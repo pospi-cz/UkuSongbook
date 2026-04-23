@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Ukebook.Models;
 
 namespace Ukebook.Services;
@@ -10,6 +11,14 @@ public sealed partial class ChordProParser
     [GeneratedRegex(@"^\{([^:}]+)(?::([^}]*))?\}$", RegexOptions.Compiled)]
     private static partial Regex DirectivePattern();
 
+    private static readonly string ChordImagesPath = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory,
+        "Themes", "Resources", "chords", "112x150");
+
+    // Cache: chord name → base64 data URI (nebo null, když obrázek neexistuje).
+    // Bez cache by se PNG četl při každém překreslení (změna fontu, transpozice…).
+    private static readonly ConcurrentDictionary<string, string?> ChordImageCache = new();
+
     public string GenerateHtml(Song song, DisplaySettings s)
     {
         var lines = song.ChordProContent.Split('\n');
@@ -20,10 +29,55 @@ public sealed partial class ChordProParser
         sb.Append("<div class=\"song-container\">");
         AppendSongHeader(sb, song, meta, s);
         AppendSongBody(sb, lines, s);
+        if (s.ShowChordDiagrams) AppendChordDiagrams(sb, lines, s);
         sb.Append("</div></body></html>");
 
         return sb.ToString();
     }
+
+    private static void AppendChordDiagrams(StringBuilder sb, string[] lines, DisplaySettings s)
+    {
+        var chords = ExtractUniqueChords(lines, s.Transpose);
+        if (chords.Count == 0) return;
+
+        sb.Append("<div class=\"chord-diagrams\">");
+        sb.Append("<h3>Použité akordy</h3>");
+        sb.Append("<div class=\"chord-grid\">");
+        foreach (var chord in chords)
+        {
+            var dataUri = LoadChordImageDataUri(chord);
+            if (dataUri is null) continue;
+            sb.Append("<div class=\"chord-item\">");
+            sb.Append($"<img src=\"{dataUri}\" alt=\"{Esc(chord)}\">");
+            sb.Append($"<span>{Esc(chord)}</span>");
+            sb.Append("</div>");
+        }
+        sb.Append("</div></div>");
+    }
+
+    private static List<string> ExtractUniqueChords(string[] lines, int transpose)
+    {
+        HashSet<string> seen = new(StringComparer.Ordinal);
+        List<string> result = [];
+        foreach (var line in lines)
+        {
+            if (line.TrimStart().StartsWith('{')) continue;
+            foreach (Match m in ChordPattern().Matches(line))
+            {
+                var chord = Transpose(m.Groups[1].Value, transpose);
+                if (seen.Add(chord)) result.Add(chord);
+            }
+        }
+        return result;
+    }
+
+    private static string? LoadChordImageDataUri(string chord) =>
+        ChordImageCache.GetOrAdd(chord, name =>
+        {
+            var path = Path.Combine(ChordImagesPath, $"{name}.png");
+            if (!File.Exists(path)) return null;
+            return "data:image/png;base64," + Convert.ToBase64String(File.ReadAllBytes(path));
+        });
 
     private static void AppendSongHeader(StringBuilder sb, Song song, SongMeta meta, DisplaySettings s)
     {
@@ -235,6 +289,12 @@ public sealed partial class ChordProParser
           .comment       { font-style:italic; color:{{s.MetaColor}}; margin:6px 0; font-size:{{s.FontSize - 1}}px; }
           .chorus-repeat { color:{{s.ChorusAccent}}; font-weight:600; font-style:italic; margin:8px 0; }
           .line-break    { height:12px; }
+          .chord-diagrams   { margin-top:36px; padding-top:18px; border-top:2px solid {{s.AccentColor}}; }
+          .chord-diagrams h3{ color:{{s.AccentColor}}; margin-bottom:14px; font-size:{{s.FontSize + 2}}px; }
+          .chord-grid       { display:flex; flex-wrap:wrap; gap:18px 20px; }
+          .chord-item       { display:flex; flex-direction:column; align-items:center; }
+          .chord-item img   { width:84px; height:auto; display:block; background:#FFFFFF; padding:4px; border-radius:4px; }
+          .chord-item span  { margin-top:6px; font-weight:700; color:{{s.ChordColor}}; font-size:{{s.FontSize}}px; }
         </style></head><body>
         """;
 
@@ -250,9 +310,10 @@ public sealed partial class ChordProParser
 
 public sealed class DisplaySettings
 {
-    public string FontFamily   { get; set; } = "Segoe UI";
-    public int    FontSize     { get; set; } = 16;
-    public int    Transpose    { get; set; } = 0;
+    public string FontFamily        { get; set; } = "Segoe UI";
+    public int    FontSize          { get; set; } = 16;
+    public int    Transpose         { get; set; } = 0;
+    public bool   ShowChordDiagrams { get; set; } = false;
 
     public string BackgroundColor { get; set; } = "#FAFAF8";
     public string TextColor       { get; set; } = "#2C2C2C";

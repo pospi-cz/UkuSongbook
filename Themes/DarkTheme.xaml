@@ -37,27 +37,28 @@
     <SolidColorBrush x:Key="SidebarBrush"              Color="#2C2C2C"/>
     <SolidColorBrush x:Key="SidebarHeaderBrush"        Color="#272727"/>
     <SolidColorBrush x:Key="SidebarTextBrush"          Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="SidebarHoverBrush"         Color="White"/>
-    <SolidColorBrush x:Key="SidebarSelectedBrush"      Color="#60CDFF1A"/>
-    <SolidColorBrush x:Key="SidebarSelectedTextBrush"  Color="#60CDFF"/>
+    <SolidColorBrush x:Key="SidebarHoverBrush"         Color="#15FFFFFF"/>
+    <SolidColorBrush x:Key="IconButtonHoverBorderBrush" Color="#5C5C5C"/>
+    <SolidColorBrush x:Key="SidebarSelectedBrush"      Color="#1A60CDFF"/>
+    <SolidColorBrush x:Key="SidebarSelectedTextBrush"  Color="#99E0FF"/>
     <SolidColorBrush x:Key="SidebarAccentBarBrush"     Color="#60CDFF"/>
-    <SolidColorBrush x:Key="SidebarInputBrush"         Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="SidebarSubtextBrush"       Color="#AAFFFF"/>
-    <SolidColorBrush x:Key="SidebarMutedBrush"         Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="SidebarSeparatorBrush"     Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SidebarInputBrush"         Color="#383838"/>
+    <SolidColorBrush x:Key="SidebarSubtextBrush"       Color="#ABABAB"/>
+    <SolidColorBrush x:Key="SidebarMutedBrush"         Color="#858585"/>
+    <SolidColorBrush x:Key="SidebarSeparatorBrush"     Color="#3D3D3D"/>
 
     <!-- ── Toolbar ───────────────────────────────────────────── -->
     <SolidColorBrush x:Key="ToolbarBrush"              Color="#282828"/>
-    <SolidColorBrush x:Key="ToolbarBorderBrush"        Color="#BBFFFF"/>
-    <SolidColorBrush x:Key="ToolbarTextBrush"          Color="#EEFFFF"/>
+    <SolidColorBrush x:Key="ToolbarBorderBrush"        Color="#3D3D3D"/>
+    <SolidColorBrush x:Key="ToolbarTextBrush"          Color="#DADADA"/>
     <SolidColorBrush x:Key="ToolbarIconBrush"          Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="ToolbarPillBrush"          Color="#ABFFFF"/>
+    <SolidColorBrush x:Key="ToolbarPillBrush"          Color="#3D3D3D"/>
 
     <!-- ── Status bar ────────────────────────────────────────── -->
     <SolidColorBrush x:Key="StatusBarBrush"            Color="#1C1C1C"/>
-    <SolidColorBrush x:Key="StatusBarBorderBrush"      Color="#AAFFFF"/>
-    <SolidColorBrush x:Key="StatusBarTextBrush"        Color="#AAFFFF"/>
-    <SolidColorBrush x:Key="StatusBarMutedBrush"       Color="#AAFFFF"/>
+    <SolidColorBrush x:Key="StatusBarBorderBrush"      Color="#3D3D3D"/>
+    <SolidColorBrush x:Key="StatusBarTextBrush"        Color="#ABABAB"/>
+    <SolidColorBrush x:Key="StatusBarMutedBrush"       Color="#858585"/>
 
     <!-- ── Accent ────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="PrimaryBrush"              Color="#60CDFF"/>
@@ -68,16 +69,16 @@
     <SolidColorBrush x:Key="DangerHoverBrush"          Color="#FF8080"/>
 
     <!-- ── Borders / Cards / Text ────────────────────────────── -->
-    <SolidColorBrush x:Key="SplitterBrush"             Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="BorderBrush"               Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SplitterBrush"             Color="#3D3D3D"/>
+    <SolidColorBrush x:Key="BorderBrush"               Color="#3D3D3D"/>
     <SolidColorBrush x:Key="CardBrush"                 Color="#2C2C2C"/>
     <SolidColorBrush x:Key="TextPrimaryBrush"          Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="TextSecondaryBrush"        Color="#AAFFFF"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush"        Color="#ABABAB"/>
 
     <!-- ── Vstupní pole ─────────────────────────────────────── -->
-    <SolidColorBrush x:Key="InputBorderBrush"          Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="InputBorderBrush"          Color="#5C5C5C"/>
     <SolidColorBrush x:Key="InputBorderFocusBrush"     Color="#60CDFF"/>
-    <SolidColorBrush x:Key="InputBgBrush"              Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="InputBgBrush"              Color="#2C2C2C"/>
 
     <!-- ── Vyhledávací pole (sidebar) — tmavý povrch, čitelný text ── -->
     <SolidColorBrush x:Key="SearchBoxBackgroundBrush"   Color="#383838"/>

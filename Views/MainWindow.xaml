@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         xmlns:vm="clr-namespace:Ukebook.ViewModels"
-        Title="🎸 Ukebook"
-        Icon="{x:Null}"
+        Title="Ukebook"
+        Icon="pack://application:,,,/Themes/Resources/ukulele.png"
         Width="1280" Height="780"
         MinWidth="860" MinHeight="520"
         WindowStartupLocation="CenterScreen"
@@ -124,8 +124,6 @@
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal"
                                     VerticalAlignment="Center" Margin="0,0,4,0">
-                            <TextBlock Text="🎸" FontSize="16"
-                                       VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBlock Text="Seznam písní"
                                        Foreground="{DynamicResource SidebarTextBrush}"
                                        FontSize="14" FontWeight="SemiBold"
@@ -292,6 +290,17 @@
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal"
                                     VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <!-- Přehled akordů -->
+                            <Button Style="{StaticResource IconButtonStyle}"
+                                    Command="{Binding ToggleChordDiagramsCommand}"
+                                    ToolTip="Zobrazit / skrýt přehled akordů pod textem"
+                                    Padding="7,5">
+                                <TextBlock Text="🎸" FontSize="13"
+                                           Foreground="{DynamicResource ToolbarIconBrush}"/>
+                            </Button>
+
+                            <Separator Style="{StaticResource ToolbarSeparatorStyle}"/>
+
                             <!-- Velikost písma -->
                             <Button Style="{StaticResource IconButtonStyle}"
                                     Command="{Binding FontDecreaseCommand}"

@@ -44,7 +44,8 @@
     <SolidColorBrush x:Key="SidebarHeaderBrush"        Color="#E8E8E8"/>
     <SolidColorBrush x:Key="SidebarTextBrush"          Color="#1A1A1A"/>
     <SolidColorBrush x:Key="SidebarHoverBrush"         Color="#00000009"/>
-    <SolidColorBrush x:Key="SidebarSelectedBrush"      Color="#0067C014"/>
+    <SolidColorBrush x:Key="IconButtonHoverBorderBrush" Color="#66000000"/>
+    <SolidColorBrush x:Key="SidebarSelectedBrush"      Color="#140067C0"/>
     <SolidColorBrush x:Key="SidebarSelectedTextBrush"  Color="#003E92"/>
     <SolidColorBrush x:Key="SidebarAccentBarBrush"     Color="#0067C0"/>
     <SolidColorBrush x:Key="SidebarInputBrush"         Color="#FFFFFF"/>

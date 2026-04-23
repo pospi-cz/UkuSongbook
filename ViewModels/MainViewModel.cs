@@ -11,13 +11,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private Song?  _selectedSong;
     private string _searchText          = string.Empty;
     private string _currentHtml         = string.Empty;
-    private bool   _isDarkTheme         = false;
+    private bool   _isDarkTheme         = ThemeService.IsDark;
     private int    _fontSize            = 16;
     private int    _transpose           = 0;
     private string _statusMessage       = "Připraveno";
     private bool   _isEditing           = false;
     private string _editContent         = string.Empty;
     private string _selectedGenreFilter = "Vše";
+    private bool   _showChordDiagrams   = SettingsService.Current.ShowChordDiagrams;
 
     public ObservableCollection<Song>   AllSongs      { get; } = [];
     public ObservableCollection<Song>   FilteredSongs { get; } = [];
@@ -104,6 +105,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set { _selectedGenreFilter = value; OnPropertyChanged(); FilterSongs(); }
     }
 
+    public bool ShowChordDiagrams
+    {
+        get => _showChordDiagrams;
+        set
+        {
+            if (_showChordDiagrams == value) return;
+            _showChordDiagrams = value;
+            OnPropertyChanged();
+            SettingsService.Current.ShowChordDiagrams = value;
+            SettingsService.Save();
+            RenderSong();
+        }
+    }
+
     public ICommand NewSongCommand       { get; }
     public ICommand EditSongCommand      { get; }
     public ICommand SaveSongCommand      { get; }
@@ -113,9 +128,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand FontDecreaseCommand  { get; }
     public ICommand TransposeUpCommand   { get; }
     public ICommand TransposeDownCommand { get; }
-    public ICommand ResetCommand{ get; }
-    public ICommand ToggleThemeCommand   { get; }
-    public ICommand RefreshCommand       { get; }
+    public ICommand ResetCommand         { get; }
+    public ICommand ToggleThemeCommand          { get; }
+    public ICommand ToggleChordDiagramsCommand  { get; }
+    public ICommand RefreshCommand              { get; }
 
     public MainViewModel()
     {
@@ -129,8 +145,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         TransposeUpCommand    = new RelayCommand(_ => Transpose++, _ => HasSelectedSong && !IsEditing);
         TransposeDownCommand  = new RelayCommand(_ => Transpose--, _ => HasSelectedSong && !IsEditing);
         ResetCommand = new RelayCommand(_ => ResetView(), _ => HasSelectedSong && !IsEditing);  
-        ToggleThemeCommand    = new RelayCommand(_ => { IsDarkTheme = !IsDarkTheme; ThemeToggleRequested?.Invoke(); });
-        RefreshCommand        = new RelayCommand(_ => LoadSongs(), _ => HasSelectedSong && !IsEditing);
+        ToggleThemeCommand         = new RelayCommand(_ => { IsDarkTheme = !IsDarkTheme; ThemeToggleRequested?.Invoke(); });
+        ToggleChordDiagramsCommand = new RelayCommand(_ => ShowChordDiagrams = !ShowChordDiagrams);
+        RefreshCommand             = new RelayCommand(_ => LoadSongs(), _ => HasSelectedSong && !IsEditing);
 
         LoadSongs();
         // Bez výběru písně má být BuildWelcomeHtml(); jinak CurrentHtml zůstane "" a WebView je černé
@@ -200,8 +217,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private DisplaySettings CurrentSettings()
     {
         var s = _isDarkTheme ? DisplaySettings.DarkTheme() : new DisplaySettings();
-        s.FontSize  = _fontSize;
-        s.Transpose = _transpose;
+        s.FontSize          = _fontSize;
+        s.Transpose         = _transpose;
+        s.ShowChordDiagrams = _showChordDiagrams;
         return s;
     }
 
@@ -288,6 +306,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    private static readonly Lazy<string> _welcomeIconDataUri = new(() =>
+    {
+        var uri = new Uri("pack://application:,,,/Themes/Resources/ukulele.png");
+        using var stream = Application.GetResourceStream(uri)!.Stream;
+        using var ms = new MemoryStream();
+        stream.CopyTo(ms);
+        return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+    });
+
     private string BuildWelcomeHtml()
     {
         var (bg, fg, accent, sub, hint, hintFg) = _isDarkTheme
@@ -301,7 +328,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                      display:flex; align-items:center; justify-content:center;
                      height:100vh; margin:0; text-align:center; }
               .w  { max-width:420px; }
-              .ic { font-size:64px; margin-bottom:16px; }
+              .ic { width:128px; height:auto; margin:0 auto 16px; display:block; }
               h1  { color:{{accent}}; font-size:28px; margin-bottom:8px; }
               p   { color:{{sub}}; font-size:15px; line-height:1.6; }
               .ht { background:{{hint}}; border-radius:8px; padding:14px;
@@ -309,7 +336,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
               code{ background:rgba(0,0,0,.1); padding:1px 5px; border-radius:3px; }
             </style></head><body>
             <div class='w'>
-              <div class='ic'>🎸</div>
+              <img class='ic' src='{{_welcomeIconDataUri.Value}}' alt='Ukulele'>
               <h1>Ukulele Zpěvník</h1>
               <p>Vyberte píseň ze seznamu vlevo nebo přidejte novou pomocí tlačítka <strong>+</strong></p>
               <div class='ht'>

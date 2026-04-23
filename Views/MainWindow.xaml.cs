@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Windows.Interop;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Ukebook.Models;
@@ -45,7 +43,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        SourceInitialized += (_, _) => RemoveTitleBarIcon();
         _ = InitWebViewsAsync();
         SetupKeyBindings();
         _previewTimer.Tick += (_, _) => { _previewTimer.Stop(); UpdatePreview(); };
@@ -54,24 +51,11 @@ public partial class MainWindow : Window
         VM.ThemeToggleRequested += OnThemeToggleRequested;
     }
 
-    /// <summary>
-    /// Smaže ikonu v záhlaví okna (ikona z exe se jinak může zobrazit i při Icon=null).
-    /// </summary>
-    private void RemoveTitleBarIcon()
-    {
-        var hwnd = new WindowInteropHelper(this).Handle;
-        if (hwnd == IntPtr.Zero) return;
-        const uint WM_SETICON = 0x0080;
-        SendMessage(hwnd, WM_SETICON, (IntPtr)0, IntPtr.Zero);
-        SendMessage(hwnd, WM_SETICON, (IntPtr)1, IntPtr.Zero);
-    }
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
     private void OnThemeToggleRequested()
     {
         ThemeService.Toggle();
+        SettingsService.Current.IsDarkTheme = ThemeService.IsDark;
+        SettingsService.Save();
         // Překresli HTML okno s novým tématem
         RenderMain();
     }
@@ -157,7 +141,7 @@ public partial class MainWindow : Window
     private void MenuAbout_Click(object sender, RoutedEventArgs e)
         => MessageBox.Show(
             """
-            🎸 Ukulele Zpěvník  —  verze 1.0
+            Ukulele Zpěvník  —  verze 1.0
             Napsáno v C# 14 / .NET 9 / WPF
 
             Formát ChordPro:
