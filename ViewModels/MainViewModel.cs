@@ -8,17 +8,17 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly SongService    _songService = new();
     private readonly ChordProParser _parser      = new();
 
-    private Song?  _selectedSong;
-    private string _searchText          = string.Empty;
-    private string _currentHtml         = string.Empty;
-    private bool   _isDarkTheme         = ThemeService.IsDark;
-    private int    _fontSize            = 16;
-    private int    _transpose           = 0;
-    private string _statusMessage       = "Připraveno";
-    private bool   _isEditing           = false;
-    private string _editContent         = string.Empty;
-    private string _selectedGenreFilter = "Vše";
-    private bool   _showChordDiagrams   = SettingsService.Current.ShowChordDiagrams;
+    private Song?        _selectedSong;
+    private string       _searchText          = string.Empty;
+    private string       _currentHtml         = string.Empty;
+    private bool         _isDarkTheme         = ThemeService.IsDark;
+    private int          _fontSize            = 16;
+    private int          _transpose           = 0;
+    private string       _statusMessage       = "Připraveno";
+    private bool         _isEditing           = false;
+    private string       _editContent         = string.Empty;
+    private string       _selectedGenreFilter = "Vše";
+    private SongViewMode _viewMode            = SettingsService.Current.ViewMode;
 
     public ObservableCollection<Song>   AllSongs      { get; } = [];
     public ObservableCollection<Song>   FilteredSongs { get; } = [];
@@ -105,18 +105,39 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set { _selectedGenreFilter = value; OnPropertyChanged(); FilterSongs(); }
     }
 
-    public bool ShowChordDiagrams
+    public SongViewMode ViewMode
     {
-        get => _showChordDiagrams;
+        get => _viewMode;
         set
         {
-            if (_showChordDiagrams == value) return;
-            _showChordDiagrams = value;
+            if (_viewMode == value) return;
+            _viewMode = value;
             OnPropertyChanged();
-            SettingsService.Current.ShowChordDiagrams = value;
+            OnPropertyChanged(nameof(IsViewModeText));
+            OnPropertyChanged(nameof(IsViewModeTextWithDiagrams));
+            OnPropertyChanged(nameof(IsViewModeInlineChordImages));
+            SettingsService.Current.ViewMode = value;
             SettingsService.Save();
             RenderSong();
         }
+    }
+
+    public bool IsViewModeText
+    {
+        get => _viewMode == SongViewMode.Text;
+        set { if (value) ViewMode = SongViewMode.Text; }
+    }
+
+    public bool IsViewModeTextWithDiagrams
+    {
+        get => _viewMode == SongViewMode.TextWithDiagrams;
+        set { if (value) ViewMode = SongViewMode.TextWithDiagrams; }
+    }
+
+    public bool IsViewModeInlineChordImages
+    {
+        get => _viewMode == SongViewMode.InlineChordImages;
+        set { if (value) ViewMode = SongViewMode.InlineChordImages; }
     }
 
     public ICommand NewSongCommand       { get; }
@@ -129,9 +150,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ICommand TransposeUpCommand   { get; }
     public ICommand TransposeDownCommand { get; }
     public ICommand ResetCommand         { get; }
-    public ICommand ToggleThemeCommand          { get; }
-    public ICommand ToggleChordDiagramsCommand  { get; }
-    public ICommand RefreshCommand              { get; }
+    public ICommand ToggleThemeCommand { get; }
+    public ICommand RefreshCommand     { get; }
 
     public MainViewModel()
     {
@@ -145,9 +165,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         TransposeUpCommand    = new RelayCommand(_ => Transpose++, _ => HasSelectedSong && !IsEditing);
         TransposeDownCommand  = new RelayCommand(_ => Transpose--, _ => HasSelectedSong && !IsEditing);
         ResetCommand = new RelayCommand(_ => ResetView(), _ => HasSelectedSong && !IsEditing);  
-        ToggleThemeCommand         = new RelayCommand(_ => { IsDarkTheme = !IsDarkTheme; ThemeToggleRequested?.Invoke(); });
-        ToggleChordDiagramsCommand = new RelayCommand(_ => ShowChordDiagrams = !ShowChordDiagrams);
-        RefreshCommand             = new RelayCommand(_ => LoadSongs(), _ => HasSelectedSong && !IsEditing);
+        ToggleThemeCommand = new RelayCommand(_ => { IsDarkTheme = !IsDarkTheme; ThemeToggleRequested?.Invoke(); });
+        RefreshCommand     = new RelayCommand(_ => LoadSongs(), _ => HasSelectedSong && !IsEditing);
 
         LoadSongs();
         // Bez výběru písně má být BuildWelcomeHtml(); jinak CurrentHtml zůstane "" a WebView je černé
@@ -217,9 +236,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private DisplaySettings CurrentSettings()
     {
         var s = _isDarkTheme ? DisplaySettings.DarkTheme() : new DisplaySettings();
-        s.FontSize          = _fontSize;
-        s.Transpose         = _transpose;
-        s.ShowChordDiagrams = _showChordDiagrams;
+        s.FontSize  = _fontSize;
+        s.Transpose = _transpose;
+        s.ViewMode  = _viewMode;
         return s;
     }
 

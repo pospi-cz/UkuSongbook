@@ -290,14 +290,34 @@
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal"
                                     VerticalAlignment="Center" HorizontalAlignment="Right">
-                            <!-- Přehled akordů -->
-                            <Button Style="{StaticResource IconButtonStyle}"
-                                    Command="{Binding ToggleChordDiagramsCommand}"
-                                    ToolTip="Zobrazit / skrýt přehled akordů pod textem"
-                                    Padding="7,5">
-                                <TextBlock Text="🎸" FontSize="13"
-                                           Foreground="{DynamicResource ToolbarIconBrush}"/>
-                            </Button>
+                            <!-- Režim zobrazení — segmentovaný přepínač -->
+                            <Border Background="{DynamicResource ToolbarPillBrush}"
+                                    BorderBrush="{DynamicResource ToolbarBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="2"
+                                    VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton Style="{StaticResource ViewModeToggleStyle}"
+                                                  IsChecked="{Binding IsViewModeText, Mode=TwoWay}"
+                                                  ToolTip="Pouze text">
+                                        <TextBlock Text="Aa" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource ToolbarIconBrush}"/>
+                                    </ToggleButton>
+                                    <ToggleButton Style="{StaticResource ViewModeToggleStyle}"
+                                                  IsChecked="{Binding IsViewModeTextWithDiagrams, Mode=TwoWay}"
+                                                  ToolTip="Text s přehledem akordů pod písní">
+                                        <TextBlock Text="🎸" FontSize="13"
+                                                   Foreground="{DynamicResource ToolbarIconBrush}"/>
+                                    </ToggleButton>
+                                    <ToggleButton Style="{StaticResource ViewModeToggleStyle}"
+                                                  IsChecked="{Binding IsViewModeInlineChordImages, Mode=TwoWay}"
+                                                  ToolTip="Akordy jako obrázky nad textem">
+                                        <TextBlock Text="🎼" FontSize="13"
+                                                   Foreground="{DynamicResource ToolbarIconBrush}"/>
+                                    </ToggleButton>
+                                </StackPanel>
+                            </Border>
 
                             <Separator Style="{StaticResource ToolbarSeparatorStyle}"/>
 

@@ -1,11 +1,15 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Ukebook.Models;
 
 namespace Ukebook.Services;
 
 public sealed class AppSettings
 {
-    public bool IsDarkTheme       { get; set; }
-    public bool ShowChordDiagrams { get; set; }
+    public bool IsDarkTheme { get; set; }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public SongViewMode ViewMode { get; set; } = SongViewMode.Text;
 }
 
 public static class SettingsService

@@ -29,7 +29,7 @@ public sealed partial class ChordProParser
         sb.Append("<div class=\"song-container\">");
         AppendSongHeader(sb, song, meta, s);
         AppendSongBody(sb, lines, s);
-        if (s.ShowChordDiagrams) AppendChordDiagrams(sb, lines, s);
+        if (s.ViewMode == SongViewMode.TextWithDiagrams) AppendChordDiagrams(sb, lines, s);
         sb.Append("</div></body></html>");
 
         return sb.ToString();
@@ -202,19 +202,35 @@ public sealed partial class ChordProParser
         }
         segments.Add((pendingChord, line[lastIdx..]));
 
+        bool inline = s.ViewMode == SongViewMode.InlineChordImages;
+
         var sb = new StringBuilder();
-        sb.Append("<div class=\"chord-line\">");
+        sb.Append(inline ? "<div class=\"chord-line chord-line-img\">" : "<div class=\"chord-line\">");
         foreach (var (chord, lyric) in segments)
         {
             sb.Append("<span class=\"chord-lyric-pair\">");
-            sb.Append(string.IsNullOrEmpty(chord)
-                ? "<span class=\"chord\"></span>"
-                : $"<span class=\"chord\">{Esc(Transpose(chord, s.Transpose))}</span>");
+            sb.Append(RenderChordCell(chord, inline, s.Transpose));
             sb.Append($"<span class=\"lyrics\">{(string.IsNullOrEmpty(lyric) ? "&nbsp;" : Esc(lyric))}</span>");
             sb.Append("</span>");
         }
         sb.Append("</div>");
         return sb.ToString();
+    }
+
+    private static string RenderChordCell(string chord, bool inline, int transpose)
+    {
+        if (string.IsNullOrEmpty(chord))
+            return inline ? "<span class=\"chord-img empty\"></span>"
+                          : "<span class=\"chord\"></span>";
+
+        var transposed = Transpose(chord, transpose);
+        if (!inline)
+            return $"<span class=\"chord\">{Esc(transposed)}</span>";
+
+        var dataUri = LoadChordImageDataUri(transposed);
+        return dataUri is null
+            ? $"<span class=\"chord chord-img-fallback\">{Esc(transposed)}</span>"
+            : $"<span class=\"chord-img\"><img src=\"{dataUri}\" alt=\"{Esc(transposed)}\"><span class=\"chord-img-label\">{Esc(transposed)}</span></span>";
     }
 
     private static SongMeta ExtractMeta(string[] lines)
@@ -295,6 +311,12 @@ public sealed partial class ChordProParser
           .chord-item       { display:flex; flex-direction:column; align-items:center; }
           .chord-item img   { width:84px; height:auto; display:block; background:#FFFFFF; padding:4px; border-radius:4px; }
           .chord-item span  { margin-top:6px; font-weight:700; color:{{s.ChordColor}}; font-size:{{s.FontSize}}px; }
+          .chord-line-img   { min-height:{{s.FontSize * 3 + 28}}px; row-gap:6px; }
+          .chord-img        { display:inline-flex; flex-direction:column; align-items:center; padding-right:6px; min-width:{{s.FontSize * 3}}px; }
+          .chord-img img    { height:{{s.FontSize * 3}}px; width:auto; display:block; background:#FFFFFF; padding:2px; border-radius:3px; }
+          .chord-img-label  { font-weight:700; color:{{s.ChordColor}}; font-size:{{s.FontSize - 3}}px; margin-top:2px; }
+          .chord-img.empty  { height:{{s.FontSize * 3 + 18}}px; padding-right:0; min-width:0; }
+          .chord-img-fallback { font-weight:700; color:{{s.ChordColor}}; font-size:{{s.FontSize}}px; align-self:flex-end; padding-right:6px; }
         </style></head><body>
         """;
 
@@ -310,10 +332,10 @@ public sealed partial class ChordProParser
 
 public sealed class DisplaySettings
 {
-    public string FontFamily        { get; set; } = "Segoe UI";
-    public int    FontSize          { get; set; } = 16;
-    public int    Transpose         { get; set; } = 0;
-    public bool   ShowChordDiagrams { get; set; } = false;
+    public string       FontFamily { get; set; } = "Segoe UI";
+    public int          FontSize   { get; set; } = 16;
+    public int          Transpose  { get; set; } = 0;
+    public SongViewMode ViewMode   { get; set; } = SongViewMode.Text;
 
     public string BackgroundColor { get; set; } = "#FAFAF8";
     public string TextColor       { get; set; } = "#2C2C2C";
