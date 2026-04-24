@@ -4,5 +4,6 @@ public enum SongViewMode
 {
     Text,
     TextWithDiagrams,
-    InlineChordImages
+    InlineChordImages,
+    TextWithChordHover
 }

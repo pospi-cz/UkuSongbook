@@ -116,6 +116,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsViewModeText));
             OnPropertyChanged(nameof(IsViewModeTextWithDiagrams));
             OnPropertyChanged(nameof(IsViewModeInlineChordImages));
+            OnPropertyChanged(nameof(IsViewModeTextWithChordHover));
             SettingsService.Current.ViewMode = value;
             SettingsService.Save();
             RenderSong();
@@ -138,6 +139,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         get => _viewMode == SongViewMode.InlineChordImages;
         set { if (value) ViewMode = SongViewMode.InlineChordImages; }
+    }
+
+    public bool IsViewModeTextWithChordHover
+    {
+        get => _viewMode == SongViewMode.TextWithChordHover;
+        set { if (value) ViewMode = SongViewMode.TextWithChordHover; }
     }
 
     public ICommand NewSongCommand       { get; }

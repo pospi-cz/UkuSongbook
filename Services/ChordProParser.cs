@@ -203,13 +203,14 @@ public sealed partial class ChordProParser
         segments.Add((pendingChord, line[lastIdx..]));
 
         bool inline = s.ViewMode == SongViewMode.InlineChordImages;
+        bool hover  = s.ViewMode == SongViewMode.TextWithChordHover;
 
         var sb = new StringBuilder();
         sb.Append(inline ? "<div class=\"chord-line chord-line-img\">" : "<div class=\"chord-line\">");
         foreach (var (chord, lyric) in segments)
         {
             sb.Append("<span class=\"chord-lyric-pair\">");
-            sb.Append(RenderChordCell(chord, inline, s.Transpose));
+            sb.Append(RenderChordCell(chord, inline, hover, s.Transpose));
             sb.Append($"<span class=\"lyrics\">{(string.IsNullOrEmpty(lyric) ? "&nbsp;" : Esc(lyric))}</span>");
             sb.Append("</span>");
         }
@@ -217,7 +218,7 @@ public sealed partial class ChordProParser
         return sb.ToString();
     }
 
-    private static string RenderChordCell(string chord, bool inline, int transpose)
+    private static string RenderChordCell(string chord, bool inline, bool hover, int transpose)
     {
         if (string.IsNullOrEmpty(chord))
             return inline ? "<span class=\"chord-img empty\"></span>"
@@ -225,7 +226,15 @@ public sealed partial class ChordProParser
 
         var transposed = Transpose(chord, transpose);
         if (!inline)
-            return $"<span class=\"chord\">{Esc(transposed)}</span>";
+        {
+            if (!hover)
+                return $"<span class=\"chord\">{Esc(transposed)}</span>";
+
+            var hoverUri = LoadChordImageDataUri(transposed);
+            if (hoverUri is null)
+                return $"<span class=\"chord\">{Esc(transposed)}</span>";
+            return $"<span class=\"chord chord-hover\">{Esc(transposed)}<span class=\"chord-popup\"><img src=\"{hoverUri}\" alt=\"{Esc(transposed)}\"></span></span>";
+        }
 
         var dataUri = LoadChordImageDataUri(transposed);
         return dataUri is null
@@ -309,14 +318,18 @@ public sealed partial class ChordProParser
           .chord-diagrams h3{ color:{{s.AccentColor}}; margin-bottom:14px; font-size:{{s.FontSize + 2}}px; }
           .chord-grid       { display:flex; flex-wrap:wrap; gap:18px 20px; }
           .chord-item       { display:flex; flex-direction:column; align-items:center; }
-          .chord-item img   { width:84px; height:auto; display:block; background:#FFFFFF; padding:4px; border-radius:4px; }
+          .chord-item img   { width:84px; height:auto; display:block; background:#FFFFFF; padding:4px; border-radius:4px;{{(s.IsDark ? " filter:invert(1);" : "")}} }
           .chord-item span  { margin-top:6px; font-weight:700; color:{{s.ChordColor}}; font-size:{{s.FontSize}}px; }
           .chord-line-img   { min-height:{{s.FontSize * 3 + 28}}px; row-gap:6px; }
           .chord-img        { display:inline-flex; flex-direction:column; align-items:center; padding-right:6px; min-width:{{s.FontSize * 3}}px; }
-          .chord-img img    { height:{{s.FontSize * 3}}px; width:auto; display:block; background:#FFFFFF; padding:2px; border-radius:3px; }
+          .chord-img img    { height:{{s.FontSize * 3}}px; width:auto; display:block; background:#FFFFFF; padding:2px; border-radius:3px;{{(s.IsDark ? " filter:invert(1);" : "")}} }
           .chord-img-label  { font-weight:700; color:{{s.ChordColor}}; font-size:{{s.FontSize - 3}}px; margin-top:2px; }
           .chord-img.empty  { height:{{s.FontSize * 3 + 18}}px; padding-right:0; min-width:0; }
           .chord-img-fallback { font-weight:700; color:{{s.ChordColor}}; font-size:{{s.FontSize}}px; align-self:flex-end; padding-right:6px; }
+          .chord-hover      { position:relative; cursor:help; }
+          .chord-popup      { display:none; position:absolute; bottom:100%; left:50%; transform:translateX(-50%); margin-bottom:4px; padding:4px; background:#FFFFFF; border-radius:4px; box-shadow:0 2px 10px rgba(0,0,0,.35); z-index:10; pointer-events:none;{{(s.IsDark ? " filter:invert(1);" : "")}} }
+          .chord-popup img  { height:{{s.FontSize * 5}}px; width:auto; display:block; }
+          .chord-hover:hover .chord-popup { display:block; }
         </style></head><body>
         """;
 
@@ -351,8 +364,11 @@ public sealed class DisplaySettings
     public string BridgeBg     { get; set; } = "#F0FFF4";
     public string BridgeAccent { get; set; } = "#27AE60";
 
+    public bool IsDark { get; set; }
+
     public static DisplaySettings DarkTheme() => new()
     {
+        IsDark          = true,
         BackgroundColor = "#1E1E1E", TextColor   = "#E8E8E8",
         ChordColor      = "#64B5F6", AccentColor = "#64B5F6",
         SubtitleColor   = "#AAAAAA", MetaColor   = "#888888",

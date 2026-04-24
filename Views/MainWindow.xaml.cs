@@ -1,3 +1,5 @@
+using System.Windows.Documents;
+using System.Windows.Media;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 using Ukebook.Models;
@@ -10,6 +12,9 @@ public partial class MainWindow : Window
 {
     private MainViewModel VM => (MainViewModel)DataContext;
     private readonly ChordProParser _parser = new();
+
+    private static readonly Regex SyntaxTokenRegex =
+        new(@"\[[^\]]*\]|\{[^}]*\}", RegexOptions.Compiled);
 
     /// <summary>
     /// Sdílené prostředí WebView2 s uživatelskou složkou v LocalApplicationData.
@@ -58,6 +63,11 @@ public partial class MainWindow : Window
         SettingsService.Save();
         // Překresli HTML okno s novým tématem
         RenderMain();
+        if (VM.IsEditing)
+        {
+            UpdatePreview();
+            UpdateSyntaxHighlight();
+        }
     }
 
     private async Task InitWebViewsAsync()
@@ -75,6 +85,13 @@ public partial class MainWindow : Window
             {
                 if (e.PropertyName is nameof(MainViewModel.CurrentHtml))
                     RenderMain();
+                else if (e.PropertyName is nameof(MainViewModel.IsEditing) && VM.IsEditing)
+                {
+                    // Při vstupu do editace překresli náhled s aktuálním motivem —
+                    // TextChanged nemusí fire-nout, když je EditContent stejné jako posledně.
+                    UpdatePreview();
+                    UpdateSyntaxHighlight();
+                }
             };
 
             RenderMain();
@@ -96,8 +113,95 @@ public partial class MainWindow : Window
 
     private void Editor_TextChanged(object sender, TextChangedEventArgs e)
     {
+        UpdateLineNumbers();
+        UpdateSyntaxHighlight();
         _previewTimer.Stop();
         _previewTimer.Start();
+    }
+
+    private void Editor_ScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        if (Math.Abs(e.VerticalChange) > 0)
+            LineNumberGutter.ScrollToVerticalOffset(e.VerticalOffset);
+
+        SyntaxOverlayTransform.X = -e.HorizontalOffset;
+        SyntaxOverlayTransform.Y = -e.VerticalOffset;
+    }
+
+    private void UpdateSyntaxHighlight()
+    {
+        var text    = EditorTextBox.Text ?? string.Empty;
+        var inlines = EditorSyntaxOverlay.Inlines;
+        inlines.Clear();
+
+        var chordBrush     = TryFindResource("EditorChordBrush")     as Brush ?? Brushes.SteelBlue;
+        var directiveBrush = TryFindResource("EditorDirectiveBrush") as Brush ?? Brushes.Purple;
+        var sectionBrush   = TryFindResource("EditorSectionBrush")   as Brush ?? Brushes.Firebrick;
+        var commentBrush   = TryFindResource("EditorCommentBrush")   as Brush ?? Brushes.ForestGreen;
+
+        int pos = 0;
+        foreach (Match m in SyntaxTokenRegex.Matches(text))
+        {
+            if (m.Index > pos)
+                inlines.Add(new Run(text[pos..m.Index]));
+
+            var token = m.Value;
+            var run   = new Run(token);
+
+            if (token[0] == '[')
+            {
+                run.Foreground = chordBrush;
+                run.FontWeight = FontWeights.SemiBold;
+            }
+            else // '{' directive
+            {
+                var inner = token.Length > 2 ? token[1..^1] : string.Empty;
+                var name  = inner.Split(':', 2)[0].Trim().ToLowerInvariant();
+
+                switch (name)
+                {
+                    case "start_of_verse"  or "sov" or "end_of_verse"  or "eov"
+                      or "start_of_chorus" or "soc" or "end_of_chorus" or "eoc"
+                      or "start_of_bridge" or "sob" or "end_of_bridge" or "eob"
+                      or "start_of_tab"    or "sot" or "end_of_tab"    or "eot"
+                      or "chorus":
+                        run.Foreground = sectionBrush;
+                        run.FontWeight = FontWeights.SemiBold;
+                        break;
+                    case "comment" or "c" or "comment_italic" or "ci":
+                        run.Foreground = commentBrush;
+                        run.FontStyle  = FontStyles.Italic;
+                        break;
+                    default:
+                        run.Foreground = directiveBrush;
+                        break;
+                }
+            }
+
+            inlines.Add(run);
+            pos = m.Index + m.Length;
+        }
+
+        if (pos < text.Length)
+            inlines.Add(new Run(text[pos..]));
+    }
+
+    private void UpdateLineNumbers()
+    {
+        var lineCount = EditorTextBox.LineCount;
+        if (lineCount < 1)
+        {
+            var text = EditorTextBox.Text ?? string.Empty;
+            lineCount = 1;
+            foreach (var ch in text) if (ch == '\n') lineCount++;
+        }
+        var sb = new StringBuilder(lineCount * 4);
+        for (int i = 1; i <= lineCount; i++)
+        {
+            sb.Append(i);
+            if (i < lineCount) sb.Append('\n');
+        }
+        LineNumberGutter.Text = sb.ToString();
     }
 
     private void UpdatePreview()
@@ -114,8 +218,9 @@ public partial class MainWindow : Window
                 Capo            = VM.SelectedSong.Capo,
                 ChordProContent = VM.EditContent
             };
-            PreviewWebView.NavigateToString(
-                _parser.GenerateHtml(tempSong, new DisplaySettings { FontSize = 14 }));
+            var settings = VM.IsDarkTheme ? DisplaySettings.DarkTheme() : new DisplaySettings();
+            settings.FontSize = 14;
+            PreviewWebView.NavigateToString(_parser.GenerateHtml(tempSong, settings));
         }
         catch { }
     }

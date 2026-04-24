@@ -101,6 +101,10 @@
     <SolidColorBrush x:Key="EditorHeaderTextBrush"     Color="#5D5D5D"/>
     <SolidColorBrush x:Key="EditorCaretBrush"          Color="#1A1A1A"/>
     <SolidColorBrush x:Key="EditorSelectionBrush"      Color="#CCE8FF"/>
+    <SolidColorBrush x:Key="EditorChordBrush"          Color="#0067C0"/>
+    <SolidColorBrush x:Key="EditorDirectiveBrush"      Color="#AF00DB"/>
+    <SolidColorBrush x:Key="EditorSectionBrush"        Color="#C41A16"/>
+    <SolidColorBrush x:Key="EditorCommentBrush"        Color="#008000"/>
 
     <!-- ── Menu ─────────────────────────────────────────────── -->
     <SolidColorBrush x:Key="MenuBackgroundBrush"       Color="#F3F3F3"/>

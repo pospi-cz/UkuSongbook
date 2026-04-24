@@ -316,6 +316,12 @@
                                         <TextBlock Text="🎼" FontSize="13"
                                                    Foreground="{DynamicResource ToolbarIconBrush}"/>
                                     </ToggleButton>
+                                    <ToggleButton Style="{StaticResource ViewModeToggleStyle}"
+                                                  IsChecked="{Binding IsViewModeTextWithChordHover, Mode=TwoWay}"
+                                                  ToolTip="Akordy nad textem, obrázek akordu po najetí myší">
+                                        <TextBlock Text="👁" FontSize="13"
+                                                   Foreground="{DynamicResource ToolbarIconBrush}"/>
+                                    </ToggleButton>
                                 </StackPanel>
                             </Border>
 
@@ -433,12 +439,54 @@
                                            Foreground="{DynamicResource EditorHeaderTextBrush}"
                                            FontFamily="Cascadia Code, Consolas" FontSize="11"/>
                             </Border>
-                            <TextBox Grid.Row="1"
-                                     x:Name="EditorTextBox"
-                                     Style="{StaticResource EditorStyle}"
-                                     Text="{Binding EditContent,
-                                            UpdateSourceTrigger=PropertyChanged}"
-                                     TextChanged="Editor_TextChanged"/>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0"
+                                         x:Name="LineNumberGutter"
+                                         IsReadOnly="True"
+                                         IsTabStop="False"
+                                         Focusable="False"
+                                         IsHitTestVisible="False"
+                                         Background="{DynamicResource EditorHeaderBrush}"
+                                         Foreground="{DynamicResource EditorHeaderTextBrush}"
+                                         BorderThickness="0"
+                                         Padding="10,16,8,16"
+                                         MinWidth="36"
+                                         TextAlignment="Right"
+                                         FontFamily="Cascadia Code, Consolas, Courier New"
+                                         FontSize="13"
+                                         VerticalScrollBarVisibility="Hidden"
+                                         HorizontalScrollBarVisibility="Hidden"
+                                         Text="1"/>
+                                <Grid Grid.Column="1" ClipToBounds="True">
+                                    <!-- Syntax-highlight overlay (za TextBoxem) -->
+                                    <TextBlock x:Name="EditorSyntaxOverlay"
+                                               IsHitTestVisible="False"
+                                               Background="Transparent"
+                                               Padding="16"
+                                               FontFamily="Cascadia Code, Consolas, Courier New"
+                                               FontSize="13"
+                                               TextWrapping="NoWrap"
+                                               Foreground="{DynamicResource EditorFgBrush}"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Top">
+                                        <TextBlock.RenderTransform>
+                                            <TranslateTransform x:Name="SyntaxOverlayTransform"/>
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+                                    <TextBox x:Name="EditorTextBox"
+                                             Style="{StaticResource EditorStyle}"
+                                             Background="Transparent"
+                                             Foreground="Transparent"
+                                             Text="{Binding EditContent,
+                                                    UpdateSourceTrigger=PropertyChanged}"
+                                             TextChanged="Editor_TextChanged"
+                                             ScrollViewer.ScrollChanged="Editor_ScrollChanged"/>
+                                </Grid>
+                            </Grid>
                         </Grid>
 
                         <!-- Svislá linka -->
